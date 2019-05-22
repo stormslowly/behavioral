@@ -1,4 +1,4 @@
-import BProgram from '../index';
+import BProgram from '../src';
 
 function generateThreads(fnGenerator, fn) {
   let threads = [];
@@ -147,7 +147,7 @@ function* startAtCenter() {
 const preventCompletionOfLineWithTwoXs = generateThreads(
   allLines,
   ([cell1, cell2, cell3]) =>
-    function*() {
+    function* () {
       const eventFn = matchAny('X', [cell1, cell2, cell3]);
       let line = [cell1, cell2, cell3];
 
@@ -215,7 +215,7 @@ test('EnforcePlayerTurns with blocking', done => {
   });
 
   let foundEvents = [];
-  bp.addBThread('except', ++priority, function*() {
+  bp.addBThread('except', ++priority, function* () {
     while (true) {
       yield {
         wait: [() => true]
@@ -245,7 +245,7 @@ test('EnforcePlayerTurns without blocking', done => {
   });
 
   let foundEvents = [];
-  bp.addBThread('except', ++priority, function*() {
+  bp.addBThread('except', ++priority, function* () {
     while (true) {
       yield {
         wait: [() => true]
@@ -289,7 +289,7 @@ test('disallowSquareReuse', done => {
   });
 
   let foundEvents = [];
-  bp.addBThread('except', ++priority, function*() {
+  bp.addBThread('except', ++priority, function* () {
     while (true) {
       yield {
         wait: [() => true]
@@ -331,7 +331,7 @@ test('Doesnt stopGameAfterWin', done => {
   });
 
   let foundEvents = [];
-  bp.addBThread('except', ++priority, function*() {
+  bp.addBThread('except', ++priority, function* () {
     while (true) {
       yield {
         wait: [() => true]
@@ -378,7 +378,7 @@ test('stopGameAfterWin', done => {
   });
 
   let foundEvents = [];
-  bp.addBThread('except', ++priority, function*() {
+  bp.addBThread('except', ++priority, function* () {
     while (true) {
       yield {
         wait: [() => true]
@@ -425,7 +425,7 @@ test('defaultMoves', done => {
   });
 
   let foundEvents = [];
-  bp.addBThread('except', ++priority, function*() {
+  bp.addBThread('except', ++priority, function* () {
     while (true) {
       yield {
         wait: [() => true]
@@ -470,7 +470,7 @@ test('startAtCenter', done => {
   });
 
   let foundEvents = [];
-  bp.addBThread('except', ++priority, function*() {
+  bp.addBThread('except', ++priority, function* () {
     while (true) {
       yield {
         wait: [() => true]
@@ -514,7 +514,7 @@ test('preventCompletionOfLineWithTwoXs', done => {
   });
 
   let foundEvents = [];
-  bp.addBThread('except', ++priority, function*() {
+  bp.addBThread('except', ++priority, function* () {
     while (true) {
       yield {
         wait: [() => true]

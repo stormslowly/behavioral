@@ -8,14 +8,18 @@
   ],
   "scripts": {
     "test": "jest",
-    "build": "babel index.js -d lib"
+    "build": "babel src/index.js -d lib"
   },
   "author": "Luca Matteis",
   "license": "MIT",
   "devDependencies": {
+    "@types/jest": "^24.0.13",
     "babel-cli": "^6.26.0",
     "babel-jest": "^23.6.0",
     "babel-preset-env": "^1.7.0",
-    "jest": "^23.6.0"
+    "jest": "24",
+    "ts-jest": "^24.0.2",
+    "ts-node": "^8.1.0",
+    "typescript": "^3.4.5"
   }
 }
