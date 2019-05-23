@@ -4,55 +4,59 @@
  * BP implementation for Javascript 1.7 (Mozilla)
  */
 
-const isEmpty = function(arr) {
+const isEmpty = function(arr: any[]): boolean {
   return arr.length == 0;
 };
 
-const notEmpty = function(arr) {
+const notEmpty = function <T>(arr: T[]): boolean {
   return arr.length > 0;
 };
 
-function compareBids(a, b) {
+type WithPriority = {
+  priority: number
+}
+
+function compareBids(a: WithPriority, b: WithPriority): number {
   return a.priority - b.priority;
 }
 
+type Bid = {
+  name: string
+  bthread: Iterator<any>
+  request?: any[]
+  wait?: any[]
+  block?: any[]
+} & WithPriority
+
 class BProgram {
+  private running: Bid[] = [];
+  private pending: Bid[] = [];
+  private lastEvent: any = undefined;
 
   constructor() {
-    this.running = [];
-    this.pending = [];
     this.lastEvent = undefined;
-    this.disabled = []; // List of currently disabled elements
   }
 
-  addBThread(name, prio, fun) {
+  addBThread(name: string, prior: number, fun: Function) {
     const bound = fun.bind({
       lastEvent: () => this.lastEvent
     });
     const bt = bound(); // Activate the generator
-    const bid = {
+    const bid: Bid = {
       name: name,
-      priority: prio,
+      priority: prior,
       bthread: bt
     };
     this.running.push(bid);
   }
 
-  addAll(bthreads, priorities) {
-    for (let name in bthreads) {
-      const fun = bthreads[name];
-      const prio = priorities[name];
-      this.addBThread(name, prio, fun);
-    }
-  }
-
-  request(e) {
-    const name = 'request ' + e;
+  request(eventName: string) {
+    const name = 'request ' + eventName;
     const bt = function* () {
       yield {
-        request: [e],
+        request: [eventName],
         wait: [
-          function(x) {
+          function() {
             return true;
           }
         ]
@@ -63,20 +67,37 @@ class BProgram {
     this.run(); // Initiate super-step
   }
 
+
+  private shiftPenndingBids(): Bid {
+    return this.pending.shift() || {
+      name: 'NULLBID',
+      wait: [],
+      priority: 0,
+      request: [],
+      bthread: function* () {
+        return null;
+      }()
+    };
+  }
+
+
   run() {
+    let bid;
     if (isEmpty(this.running)) {
       return; // TODO: Test end-case of empty current list
     }
     while (notEmpty(this.running)) {
-      var bid = this.running.shift();
+      bid = this.running.shift();
+      if (!bid) break;
+
       const bt = bid.bthread;
       const next = bt.next(this.lastEvent);
       if (!next.done) {
-        const newbid = next.value; // Run an iteration of the generator
-        newbid.bthread = bt; // Bind the bthread to the bid for running later
-        newbid.priority = bid.priority; // Keep copying the prio
-        newbid.name = bid.name; // Keep copying the name
-        this.pending.push(newbid);
+        const newBid = next.value; // Run an iteration of the generator
+        newBid.bthread = bt; // Bind the bthread to the bid for running later
+        newBid.priority = bid.priority; // Keep copying the prio
+        newBid.name = bid.name; // Keep copying the name
+        this.pending.push(newBid);
       } else {
         // This is normal - the bthread has finished.
       }
@@ -88,6 +109,9 @@ class BProgram {
       const temp = [];
       while (notEmpty(this.pending)) {
         bid = this.pending.shift();
+
+        if (!bid) break;
+
         let r = bid.request ? bid.request : [];
         // Always convert `request: 'FOO'` into `request: ['FOO']`
         if (!Array.isArray(r)) {
@@ -97,10 +121,10 @@ class BProgram {
         if (!Array.isArray(w)) {
           w = [w];
         }
-        const waitlist = r.concat(w);
+        const waitList = r.concat(w);
         let cur = false;
-        for (let i = 0; i < waitlist.length; i++) {
-          let waiting = waitlist[i];
+        for (let i = 0; i < waitList.length; i++) {
+          let waiting = waitList[i];
           // Convert string `request|wait: 'FOO'` into `request|wait: { type: 'FOO'}`
           if (typeof waiting === 'string') {
             waiting = { type: waiting };
